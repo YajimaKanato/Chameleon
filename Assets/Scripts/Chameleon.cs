@@ -8,31 +8,62 @@ public class Chameleon : MonoBehaviour
     LayerMask _groundLayer;
     RaycastHit2D _hitGround;
 
-    float _speed;
+    Rigidbody2D _rb2d;
+
+    [Header("Status")]
+    [SerializeField]
+    float _move;
+    [SerializeField]
+    float _run;
+    [SerializeField]
+    float _jumpPower;
+
+    float _speed;//キー入力を取得
+    float _baseMove;//移動に使う
 
     private void Start()
     {
-
+        _rb2d = GetComponent<Rigidbody2D>();
+        _baseMove = _move;
     }
 
 
     private void Update()
     {
-        _speed = Input.GetAxisRaw("Horizontal");
-        transform.position += Vector3.right * _speed * 0.01f;
-
-        Debug.DrawLine(transform.position, transform.position + Vector3.down);
-        _hitGround = Physics2D.Linecast(transform.position, transform.position + Vector3.down, _groundLayer);
-
-        if (!_hitGround)
+        //ダッシュ
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
-            Debug.Log(_hitGround);
+            Debug.Log("run");
+            _baseMove = _run;
         }
-        if ((Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) && _hitGround)
+        else
+        {
+            Debug.Log("move");
+            _baseMove = _move;
+        }
+
+        //横移動
+        _speed = Input.GetAxisRaw("Horizontal");
+        transform.position += Vector3.right * _speed * _baseMove;
+
+        //Linecast
+        Debug.DrawLine(transform.position, transform.position + Vector3.down * 1.1f);
+        _hitGround = Physics2D.Linecast(transform.position, transform.position + Vector3.down * 1.1f, _groundLayer);
+
+        //ジャンプ
+        if (Input.GetKeyDown(KeyCode.Space)) _rb2d.AddForce(new Vector3(_speed, _jumpPower, 0),ForceMode2D.Impulse);
+
+        //色変え
+        if (Input.GetKeyDown(KeyCode.C) && _hitGround.collider)
         {
             Debug.Log("ColorChange");
             Colors c = _hitGround.collider.GetComponent<Colors>();
             this.gameObject.GetComponent<SpriteRenderer>().color = new Color(c.r, c.g, c.b, c.a);
+        }
+        else if (Input.GetKeyDown(KeyCode.C) && !_hitGround.collider)
+        {
+            Debug.Log("ColorReset");
+            this.gameObject.GetComponent<SpriteRenderer>().color = Color.white;
         }
     }
 
