@@ -33,12 +33,10 @@ public class Chameleon : MonoBehaviour
         //ダッシュ
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
-            Debug.Log("run");
             _baseMove = _run;
         }
         else
         {
-            Debug.Log("move");
             _baseMove = _move;
         }
 
@@ -56,6 +54,7 @@ public class Chameleon : MonoBehaviour
         //色変え
         if (Input.GetKeyDown(KeyCode.C) && _hitGround.collider)
         {
+            Debug.Log(_hitGround.collider.gameObject.layer);
             Debug.Log("ColorChange");
             Colors c = _hitGround.collider.GetComponent<Colors>();
             this.gameObject.GetComponent<SpriteRenderer>().color = new Color(c.r, c.g, c.b, c.a);
@@ -65,6 +64,12 @@ public class Chameleon : MonoBehaviour
             Debug.Log("ColorReset");
             this.gameObject.GetComponent<SpriteRenderer>().color = Color.white;
         }
+        
+    }
+
+    void ChangeAttack(int layer)
+    {
+
     }
 
     /*SpriteRenderer sp;
