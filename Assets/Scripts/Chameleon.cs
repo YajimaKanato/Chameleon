@@ -24,9 +24,9 @@ public class Chameleon : MonoBehaviour
         Debug.DrawLine(transform.position, transform.position + Vector3.down);
         _hitGround = Physics2D.Linecast(transform.position, transform.position + Vector3.down, _groundLayer);
 
-        if (_hitGround)
+        if (!_hitGround)
         {
-            Debug.Log("a");
+            Debug.Log(_hitGround);
         }
         if ((Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) && _hitGround)
         {
