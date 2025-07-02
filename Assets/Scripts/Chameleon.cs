@@ -23,6 +23,8 @@ public class Chameleon : MonoBehaviour
 
     float _speed;//キー入力を取得
     float _baseMove;//移動に使う
+    int _attackSelect = 1;//攻撃切り替え
+    int _nowLayer = 0;
 
     private void Start()
     {
@@ -48,7 +50,7 @@ public class Chameleon : MonoBehaviour
         //横移動
         _speed = Input.GetAxisRaw("Horizontal");
         transform.position += Vector3.right * _speed * _baseMove;
-        if (_speed != 0 && !_isAttacking)//方向転換（舌伸ばし中は方向転換しない）
+        if (_speed != 0 && !_isTongueAttacking)//方向転換（舌伸ばし中は方向転換しない）
         {
             transform.localScale = new Vector3(_speed, 1, 1);
         }
@@ -63,27 +65,151 @@ public class Chameleon : MonoBehaviour
         //色変え
         if (Input.GetKeyDown(KeyCode.C) && _hitGround.collider)
         {
-            Debug.Log(_hitGround.collider.gameObject.layer);
             Debug.Log("ColorChange");
             Colors c = _hitGround.collider.GetComponent<Colors>();
             this.gameObject.GetComponent<SpriteRenderer>().color = new Color(c.r, c.g, c.b, c.a);
+            _nowLayer = 1 << _hitGround.collider.gameObject.layer;
         }
         else if (Input.GetKeyDown(KeyCode.C) && !_hitGround.collider)
         {
             Debug.Log("ColorReset");
             this.gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+            _nowLayer = 0;
+        }
+
+        //攻撃切り替え
+        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+        {
+            Debug.Log("攻撃切り替え：１");
+            _attackSelect = 1;
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
+        {
+            Debug.Log("攻撃切り替え：２");
+            _attackSelect = 2;
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
+        {
+            Debug.Log("攻撃切り替え：３");
+            _attackSelect = 3;
         }
 
         //攻撃
-        if (Input.GetMouseButtonDown(0) && !_isAttacking)
+        if (Input.GetMouseButtonDown(0))
         {
-            TongueAttack();
+            ColorAttack();
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    /// <summary>
+    /// 色に応じた攻撃をする関数
+    /// </summary>
+    void ColorAttack()
     {
-        
+        if ((_nowLayer & 1 << LayerMask.NameToLayer("Red")) == 1 << LayerMask.NameToLayer("Red"))
+        {
+            Debug.Log("RedAttack");
+            switch (_attackSelect)
+            {
+                case 1:
+                    _tongueRange = 1;
+                    TongueAttack();
+                    break;
+                case 2:
+                    FireCharge();
+                    break;
+            }
+        }
+        else if ((_nowLayer & 1 << LayerMask.NameToLayer("Blue")) == 1 << LayerMask.NameToLayer("Blue"))
+        {
+            Debug.Log("BlueAttack");
+            switch (_attackSelect)
+            {
+                case 1:
+                    _tongueRange = 1;
+                    TongueAttack();
+                    break;
+                case 2:
+                    BubbleCharge();
+                    break;
+            }
+        }
+        else if ((_nowLayer & 1 << LayerMask.NameToLayer("Yellow")) == 1 << LayerMask.NameToLayer("Yellow"))
+        {
+            Debug.Log("YellowAttack");
+            switch (_attackSelect)
+            {
+                case 1:
+                    _tongueRange = 1;
+                    TongueAttack();
+                    break;
+                case 2:
+                    ThunderCharge();
+                    break;
+            }
+        }
+        else if ((_nowLayer & 1 << LayerMask.NameToLayer("Purple")) == 1 << LayerMask.NameToLayer("Purple"))
+        {
+            Debug.Log("PurpleAttack");
+            switch (_attackSelect)
+            {
+                case 1:
+                    _tongueRange = 3;
+                    TongueAttack();
+                    break;
+                case 2:
+                    FireCharge();
+                    break;
+                case 3:
+                    BubbleCharge();
+                    break;
+            }
+        }
+        else if ((_nowLayer & 1 << LayerMask.NameToLayer("Green")) == 1 << LayerMask.NameToLayer("Green"))
+        {
+            Debug.Log("GreenAttack");
+            switch (_attackSelect)
+            {
+                case 1:
+                    _tongueRange = 3;
+                    TongueAttack();
+                    break;
+                case 2:
+                    BubbleCharge();
+                    break;
+                case 3:
+                    ThunderCharge();
+                    break;
+            }
+        }
+        else if ((_nowLayer & 1 << LayerMask.NameToLayer("Orange")) == 1 << LayerMask.NameToLayer("Orange"))
+        {
+            Debug.Log("OrangeAttack");
+            switch (_attackSelect)
+            {
+                case 1:
+                    _tongueRange = 3;
+                    TongueAttack();
+                    break;
+                case 2:
+                    ThunderCharge();
+                    break;
+                case 3:
+                    FireCharge();
+                    break;
+            }
+        }
+        else if (_nowLayer == 0)
+        {
+            Debug.Log("NormalAttack");
+            switch (_attackSelect)
+            {
+                case 1:
+                    _tongueRange = 1;
+                    TongueAttack();
+                    break;
+            }
+        }
     }
 
     //舌攻撃に関するフィールド
@@ -92,7 +218,7 @@ public class Chameleon : MonoBehaviour
     [SerializeField]
     float _tongueRange;
 
-    bool _isAttacking;//攻撃中かどうか
+    bool _isTongueAttacking = false;//攻撃中かどうか
 
     const float _tongueRangeMaxTime = 0.3f;//舌が伸びきるまでの時間
 
@@ -101,8 +227,11 @@ public class Chameleon : MonoBehaviour
     /// </summary>
     void TongueAttack()
     {
-        _isAttacking = true;
-        StartCoroutine(LengthenTongueCoroutine());
+        if (!_isTongueAttacking)
+        {
+            Debug.Log("舌伸ばし攻撃");
+            StartCoroutine(LengthenTongueCoroutine());
+        }
     }
 
     /// <summary>
@@ -111,6 +240,7 @@ public class Chameleon : MonoBehaviour
     /// <returns></returns>
     IEnumerator LengthenTongueCoroutine()
     {
+        _isTongueAttacking = true;
         Vector3 nowRange = Vector3.zero;
         while (true)
         {
@@ -144,7 +274,8 @@ public class Chameleon : MonoBehaviour
             }
             else if (nowRange.x - 0.0f <= 0.0f)
             {
-                _isAttacking = false;
+                _isTongueAttacking = false;
+                Debug.Log("舌クールタイム終了");
                 yield break;
             }
             _cc2d.offset = nowRange;
@@ -152,18 +283,101 @@ public class Chameleon : MonoBehaviour
         }
     }
 
+
+    //炎攻撃
+    [Header("FireCharge")]
+    [SerializeField]
+    GameObject _fireCharge;
+
+    bool _isFireAttacking = false;
+
+    /// <summary>
+    /// 炎攻撃をする関数
+    /// </summary>
     void FireCharge()
     {
-
+        if (!_isFireAttacking)
+        {
+            Debug.Log("炎攻撃");
+            Instantiate(_fireCharge, transform.position + Vector3.right * 0.3f * transform.localScale.x, Quaternion.identity);
+            StartCoroutine(FireCoolTimeCoroutine());
+        }
     }
 
+    /// <summary>
+    /// 属性攻撃のクールタイムに関するコルーチン
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator FireCoolTimeCoroutine()
+    {
+        _isFireAttacking = true;
+        yield return new WaitForSeconds(1.0f);
+        _isFireAttacking = false;
+        Debug.Log("炎クールタイム終了");
+        yield break;
+    }
+
+    //水攻撃
+    [Header("BubbleCharge")]
+    [SerializeField]
+    GameObject _bubbleCharge;
+
+    bool _isBubbleAttacking = false;
+
+    /// <summary>
+    /// 水攻撃をする関数
+    /// </summary>
     void BubbleCharge()
     {
-
+        if (!_isBubbleAttacking)
+        {
+            Debug.Log("水攻撃");
+            Instantiate(_bubbleCharge, transform.position + Vector3.right * 0.3f * transform.localScale.x, Quaternion.identity);
+            StartCoroutine(BubbleCoolTimeCoroutine());
+        }
     }
 
+    /// <summary>
+    /// 属性攻撃のクールタイムに関するコルーチン
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator BubbleCoolTimeCoroutine()
+    {
+        _isBubbleAttacking = true;
+        yield return new WaitForSeconds(1.0f);
+        _isBubbleAttacking = false;
+        Debug.Log("水クールタイム終了");
+        yield break;
+    }
+
+    //雷攻撃
+    [Header("ThunderCharge")]
+    [SerializeField]
+    GameObject _thunderCharge;
+
+    bool _isThunderAttacking = false;
+
+    //雷攻撃をする関数
     void ThunderCharge()
     {
+        if (!_isThunderAttacking)
+        {
+            Debug.Log("雷攻撃");
+            Instantiate(_thunderCharge, transform.position + Vector3.right * 0.3f * transform.localScale.x, Quaternion.identity);
+            StartCoroutine(ThunderCoolTimeCoroutine());
+        }
+    }
 
+    /// <summary>
+    /// 属性攻撃のクールタイムに関するコルーチン
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator ThunderCoolTimeCoroutine()
+    {
+        _isThunderAttacking = true;
+        yield return new WaitForSeconds(1.0f);
+        _isThunderAttacking = false;
+        Debug.Log("雷クールタイム終了");
+        yield break;
     }
 }

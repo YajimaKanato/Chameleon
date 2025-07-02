@@ -229,7 +229,10 @@ MonoBehaviour:
   _move: 0.01
   _run: 0.5
   _jumpPower: 10
-  _tongueRange: 3
+  _tongueRange: 1
+  _fireCharge: {fileID: 3500416832081502254, guid: 274b805b0ce236c49ba717d805ee89c5, type: 3}
+  _bubbleCharge: {fileID: 8817783934215764340, guid: 707823154eefd9b4cbe4f4a379b226cb, type: 3}
+  _thunderCharge: {fileID: 1675760974273204547, guid: f15d3dc6a81745a47ac34fe6b6236e2e, type: 3}
 --- !u!50 &194375318
 Rigidbody2D:
   serializedVersion: 5
