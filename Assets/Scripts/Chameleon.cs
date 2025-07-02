@@ -213,13 +213,15 @@ public class Chameleon : MonoBehaviour
     }
 
     //ãUŒ‚‚ÉŠÖ‚·‚éƒtƒB[ƒ‹ƒh
+    Vector3 _tongueVector;
+    Vector3 _mousePoint;
+
     [Header("TongueRange")]
     [Tooltip("ã‚Ì’·‚³")]
     [SerializeField]
     float _tongueRange;
 
     bool _isTongueAttacking = false;//UŒ‚’†‚©‚Ç‚¤‚©
-
     const float _tongueRangeMaxTime = 0.3f;//ã‚ªL‚Ñ‚«‚é‚Ü‚Å‚ÌŠÔ
 
     /// <summary>
@@ -229,6 +231,9 @@ public class Chameleon : MonoBehaviour
     {
         if (!_isTongueAttacking)
         {
+            _mousePoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            //Šp“xŒvZ
+
             Debug.Log("ãL‚Î‚µUŒ‚");
             StartCoroutine(LengthenTongueCoroutine());
         }
