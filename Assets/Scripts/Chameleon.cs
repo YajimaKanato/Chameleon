@@ -12,6 +12,7 @@ public class Chameleon : MonoBehaviour
     Rigidbody2D _rb2d;
     CircleCollider2D _cc2d;
     EdgeCollider2D _ec2d;
+    Vector _vector;//自作クラス
 
     [Header("Status")]
     [SerializeField]
@@ -32,6 +33,7 @@ public class Chameleon : MonoBehaviour
         _cc2d = GetComponent<CircleCollider2D>();
         _ec2d = GetComponent<EdgeCollider2D>();
         _baseMove = _move;
+        _vector = new Vector();
     }
 
 
@@ -112,7 +114,7 @@ public class Chameleon : MonoBehaviour
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 1;
+                    _tongueRange = 2;
                     TongueAttack();
                     break;
                 case 2:
@@ -126,7 +128,7 @@ public class Chameleon : MonoBehaviour
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 1;
+                    _tongueRange = 2;
                     TongueAttack();
                     break;
                 case 2:
@@ -140,7 +142,7 @@ public class Chameleon : MonoBehaviour
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 1;
+                    _tongueRange = 2;
                     TongueAttack();
                     break;
                 case 2:
@@ -154,7 +156,7 @@ public class Chameleon : MonoBehaviour
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 3;
+                    _tongueRange = 5;
                     TongueAttack();
                     break;
                 case 2:
@@ -171,7 +173,7 @@ public class Chameleon : MonoBehaviour
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 3;
+                    _tongueRange = 5;
                     TongueAttack();
                     break;
                 case 2:
@@ -188,7 +190,7 @@ public class Chameleon : MonoBehaviour
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 3;
+                    _tongueRange = 5;
                     TongueAttack();
                     break;
                 case 2:
@@ -205,7 +207,7 @@ public class Chameleon : MonoBehaviour
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 1;
+                    _tongueRange = 3;
                     TongueAttack();
                     break;
             }
@@ -231,8 +233,22 @@ public class Chameleon : MonoBehaviour
     {
         if (!_isTongueAttacking)
         {
+            //マウスの座標を取得
             _mousePoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            //角度計算
+            _mousePoint.z = 0;
+
+            _tongueVector = _vector.Multiple((_mousePoint - transform.position).normalized, transform.localScale);
+            if ((_mousePoint.x - transform.position.x) * transform.localScale.x <= 0)//舌の可動範囲を制限
+            {
+                _tongueVector = new Vector3(0, 1, 0);
+            }
+            else if (_mousePoint.y - transform.position.y <= -1 / 2f)
+            {
+                Debug.Log("b");
+                _tongueVector = new Vector3(Mathf.Sqrt(3) / 2f, -1 / 2f, 0);
+            }
+            Debug.Log(_tongueVector);
+            //_tongueVector = _vector.Multiple((_mousePoint - transform.position).normalized, transform.localScale);
 
             Debug.Log("舌伸ばし攻撃");
             StartCoroutine(LengthenTongueCoroutine());
@@ -251,7 +267,7 @@ public class Chameleon : MonoBehaviour
         {
             if (Vector3.Distance(Vector3.zero, nowRange) < _tongueRange)
             {
-                nowRange += Vector3.right * _tongueRange * Time.deltaTime / _tongueRangeMaxTime;
+                nowRange += _tongueVector * _tongueRange * Time.deltaTime / _tongueRangeMaxTime;
                 yield return null;
             }
             else if (Vector3.Distance(Vector3.zero, nowRange) >= _tongueRange)
@@ -272,12 +288,16 @@ public class Chameleon : MonoBehaviour
     {
         while (true)
         {
-            if (nowRange.x - 0.0f > 0.0f)
+            if (Vector3.Distance(nowRange, Vector3.zero) > 0.0f)
             {
-                nowRange -= Vector3.right * _tongueRange * Time.deltaTime / _tongueRangeMaxTime;
+                nowRange -= _tongueVector * _tongueRange * Time.deltaTime / _tongueRangeMaxTime;
+                if (nowRange.x * _tongueVector.x <= 0 && nowRange.y * _tongueVector.y <= 0)//縮みきったら
+                {
+                    nowRange = Vector3.zero;
+                }
                 yield return null;
             }
-            else if (nowRange.x - 0.0f <= 0.0f)
+            else if (Vector3.Distance(nowRange, Vector3.zero) <= 0.0f)
             {
                 _isTongueAttacking = false;
                 Debug.Log("舌クールタイム終了");
