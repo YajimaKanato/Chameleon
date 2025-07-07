@@ -14,6 +14,10 @@ public class Chameleon : MonoBehaviour
     EdgeCollider2D _ec2d;
     Vector _vector;//自作クラス
 
+    [Header("Muzzle"), Tooltip("弾の射出口")]
+    [SerializeField]
+    Transform _muzzle;
+
     [Header("Status")]
     [SerializeField]
     float _move;
@@ -62,7 +66,10 @@ public class Chameleon : MonoBehaviour
         _hitGround = Physics2D.Linecast(transform.position, transform.position + Vector3.down * 1.1f, _groundLayer);
 
         //ジャンプ
-        if (Input.GetKeyDown(KeyCode.Space)) _rb2d.AddForce(new Vector3(_speed, _jumpPower, 0), ForceMode2D.Impulse);
+        if (Input.GetKeyDown(KeyCode.Space) && _hitGround)
+        {
+            _rb2d.AddForce(new Vector3(_speed, _jumpPower, 0), ForceMode2D.Impulse);
+        }
 
         //色変え
         if (Input.GetKeyDown(KeyCode.C) && _hitGround.collider)
@@ -110,6 +117,7 @@ public class Chameleon : MonoBehaviour
     {
         if ((_nowLayer & 1 << LayerMask.NameToLayer("Red")) == 1 << LayerMask.NameToLayer("Red"))
         {
+            Charge.Damage = 1.0f;//ダメージ量設定
             Debug.Log("RedAttack");
             switch (_attackSelect)
             {
@@ -124,6 +132,7 @@ public class Chameleon : MonoBehaviour
         }
         else if ((_nowLayer & 1 << LayerMask.NameToLayer("Blue")) == 1 << LayerMask.NameToLayer("Blue"))
         {
+            Charge.Damage = 1.0f;
             Debug.Log("BlueAttack");
             switch (_attackSelect)
             {
@@ -138,6 +147,7 @@ public class Chameleon : MonoBehaviour
         }
         else if ((_nowLayer & 1 << LayerMask.NameToLayer("Yellow")) == 1 << LayerMask.NameToLayer("Yellow"))
         {
+            Charge.Damage = 1.0f;
             Debug.Log("YellowAttack");
             switch (_attackSelect)
             {
@@ -152,6 +162,7 @@ public class Chameleon : MonoBehaviour
         }
         else if ((_nowLayer & 1 << LayerMask.NameToLayer("Purple")) == 1 << LayerMask.NameToLayer("Purple"))
         {
+            Charge.Damage = 0.5f;
             Debug.Log("PurpleAttack");
             switch (_attackSelect)
             {
@@ -169,6 +180,7 @@ public class Chameleon : MonoBehaviour
         }
         else if ((_nowLayer & 1 << LayerMask.NameToLayer("Green")) == 1 << LayerMask.NameToLayer("Green"))
         {
+            Charge.Damage = 0.5f;
             Debug.Log("GreenAttack");
             switch (_attackSelect)
             {
@@ -186,6 +198,7 @@ public class Chameleon : MonoBehaviour
         }
         else if ((_nowLayer & 1 << LayerMask.NameToLayer("Orange")) == 1 << LayerMask.NameToLayer("Orange"))
         {
+            Charge.Damage = 0.5f;
             Debug.Log("OrangeAttack");
             switch (_attackSelect)
             {
@@ -324,7 +337,7 @@ public class Chameleon : MonoBehaviour
         if (!_isFireAttacking)
         {
             Debug.Log("炎攻撃");
-            Instantiate(_fireCharge, transform.position + Vector3.right * 0.3f * transform.localScale.x, Quaternion.identity);
+            Instantiate(_fireCharge, _muzzle.transform.position, Quaternion.identity);
             StartCoroutine(FireCoolTimeCoroutine());
         }
     }
@@ -357,7 +370,7 @@ public class Chameleon : MonoBehaviour
         if (!_isBubbleAttacking)
         {
             Debug.Log("水攻撃");
-            Instantiate(_bubbleCharge, transform.position + Vector3.right * 0.3f * transform.localScale.x, Quaternion.identity);
+            Instantiate(_bubbleCharge, _muzzle.transform.position, Quaternion.identity);
             StartCoroutine(BubbleCoolTimeCoroutine());
         }
     }
@@ -388,7 +401,7 @@ public class Chameleon : MonoBehaviour
         if (!_isThunderAttacking)
         {
             Debug.Log("雷攻撃");
-            Instantiate(_thunderCharge, transform.position + Vector3.right * 0.3f * transform.localScale.x, Quaternion.identity);
+            Instantiate(_thunderCharge, _muzzle.transform.position, Quaternion.identity);
             StartCoroutine(ThunderCoolTimeCoroutine());
         }
     }
