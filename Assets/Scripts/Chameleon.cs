@@ -68,8 +68,8 @@ public class Chameleon : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.C) && _hitGround.collider)
         {
             Debug.Log("ColorChange");
-            Colors c = _hitGround.collider.GetComponent<Colors>();
-            this.gameObject.GetComponent<SpriteRenderer>().color = new Color(c.r, c.g, c.b, c.a);
+            Color c = _hitGround.collider.GetComponent<SpriteRenderer>().color;
+            this.gameObject.GetComponent<SpriteRenderer>().color = c;
             _nowLayer = 1 << _hitGround.collider.gameObject.layer;
         }
         else if (Input.GetKeyDown(KeyCode.C) && !_hitGround.collider)
