@@ -2,11 +2,17 @@ using UnityEngine;
 
 public class Charge : MonoBehaviour
 {
-    Rigidbody2D _rb2d;
+    public enum Element
+    {
+        Red,
+        Blue,
+        Yellow
+    }
 
-    //与えるダメージ量
-    static float _damage;
-    public static float Damage { get { return _damage; } set { _damage = value; } }
+    [Header("Element")]
+    public Element _element;
+
+    Rigidbody2D _rb2d;
 
     [Header("ShotPower"), Tooltip("射出速度")]
     [SerializeField]

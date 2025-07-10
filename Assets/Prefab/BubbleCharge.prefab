@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -6627387978337535689}
   m_Layer: 0
   m_Name: BubbleCharge
-  m_TagString: BubbleCharge
+  m_TagString: FireCharge
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -165,4 +165,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ede0343b65cc0e44f867b402a0d4a9c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _element: 0
   _shotPower: 5

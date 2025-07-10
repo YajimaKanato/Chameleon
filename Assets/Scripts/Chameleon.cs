@@ -18,26 +18,31 @@ public class Chameleon : MonoBehaviour
     [SerializeField]
     Transform _muzzle;
 
-    [Header("Status")]
+    [Header("Status(ScriptableObject)")]
     [SerializeField]
-    float _move;
-    [SerializeField]
-    float _run;
-    [SerializeField]
-    float _jumpPower;
+    PlayerElement _playerElement;
+
+    //Status
+    public int _element;
+    float _chargePower;
+    float _tonguePower;
+    [Header("StatusCheck")]
+    [SerializeField] float _walk = 0.2f;
+    [SerializeField] float _run = 0.5f;
+    [SerializeField] float _jump = 5.0f;
+    float _tongueRange;
 
     float _speed;//キー入力を取得
-    float _baseMove;//移動に使う
     int _attackSelect = 1;//攻撃切り替え
-    int _nowLayer = 0;
+    int _nowLayer = 6;
 
     private void Start()
     {
         _rb2d = GetComponent<Rigidbody2D>();
         _cc2d = GetComponent<CircleCollider2D>();
         _ec2d = GetComponent<EdgeCollider2D>();
-        _baseMove = _move;
         _vector = new Vector();
+        StatusSetting();
     }
 
 
@@ -46,20 +51,25 @@ public class Chameleon : MonoBehaviour
         //ダッシュ
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
-            _baseMove = _run;
+            _speed = Input.GetAxisRaw("Horizontal");
+            transform.position += Vector3.right * _speed * _run;
+            if (_speed != 0 && !_isTongueAttacking)//方向転換（舌伸ばし中は方向転換しない）
+            {
+                transform.localScale = new Vector3(_speed, 1, 1);
+            }
         }
         else
         {
-            _baseMove = _move;
+            _speed = Input.GetAxisRaw("Horizontal");
+            transform.position += Vector3.right * _speed * _walk;
+            if (_speed != 0 && !_isTongueAttacking)//方向転換（舌伸ばし中は方向転換しない）
+            {
+                transform.localScale = new Vector3(_speed, 1, 1);
+            }
         }
 
         //横移動
-        _speed = Input.GetAxisRaw("Horizontal");
-        transform.position += Vector3.right * _speed * _baseMove;
-        if (_speed != 0 && !_isTongueAttacking)//方向転換（舌伸ばし中は方向転換しない）
-        {
-            transform.localScale = new Vector3(_speed, 1, 1);
-        }
+
 
         //Linecast
         Debug.DrawLine(transform.position, transform.position + Vector3.down * 1.1f);
@@ -68,7 +78,7 @@ public class Chameleon : MonoBehaviour
         //ジャンプ
         if (Input.GetKeyDown(KeyCode.Space) && _hitGround)
         {
-            _rb2d.AddForce(new Vector3(_speed, _jumpPower, 0), ForceMode2D.Impulse);
+            _rb2d.AddForce(new Vector3(_speed, _jump, 0), ForceMode2D.Impulse);
         }
 
         //色変え
@@ -77,13 +87,15 @@ public class Chameleon : MonoBehaviour
             Debug.Log("ColorChange");
             Color c = _hitGround.collider.GetComponent<SpriteRenderer>().color;
             this.gameObject.GetComponent<SpriteRenderer>().color = c;
-            _nowLayer = 1 << _hitGround.collider.gameObject.layer;
+            _nowLayer = _hitGround.collider.gameObject.layer - LayerMask.NameToLayer("Red");//インデックス調整
+            StatusSetting();
         }
         else if (Input.GetKeyDown(KeyCode.C) && !_hitGround.collider)
         {
             Debug.Log("ColorReset");
             this.gameObject.GetComponent<SpriteRenderer>().color = Color.white;
-            _nowLayer = 0;
+            _nowLayer = 6;
+            StatusSetting();
         }
 
         //攻撃切り替え
@@ -110,19 +122,26 @@ public class Chameleon : MonoBehaviour
         }
     }
 
+    void StatusSetting()
+    {
+        _element = (int)_playerElement._elementData[_nowLayer]._element;
+        _chargePower = _playerElement._elementData[_nowLayer]._chargePower;
+        _tonguePower = _playerElement._elementData[_nowLayer]._tonguePower;
+        _tongueRange = _playerElement._elementData[_nowLayer]._tongueRange;
+    }
+
     /// <summary>
     /// 色に応じた攻撃をする関数
     /// </summary>
     void ColorAttack()
     {
-        if ((_nowLayer & 1 << LayerMask.NameToLayer("Red")) == 1 << LayerMask.NameToLayer("Red"))
+        Debug.Log(_element);
+        if (_element == 0)
         {
-            Charge.Damage = 1.0f;//ダメージ量設定
             Debug.Log("RedAttack");
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 2;
                     TongueAttack();
                     break;
                 case 2:
@@ -130,14 +149,12 @@ public class Chameleon : MonoBehaviour
                     break;
             }
         }
-        else if ((_nowLayer & 1 << LayerMask.NameToLayer("Blue")) == 1 << LayerMask.NameToLayer("Blue"))
+        else if (_element == 1)
         {
-            Charge.Damage = 1.0f;
             Debug.Log("BlueAttack");
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 2;
                     TongueAttack();
                     break;
                 case 2:
@@ -145,14 +162,12 @@ public class Chameleon : MonoBehaviour
                     break;
             }
         }
-        else if ((_nowLayer & 1 << LayerMask.NameToLayer("Yellow")) == 1 << LayerMask.NameToLayer("Yellow"))
+        else if (_element == 2)
         {
-            Charge.Damage = 1.0f;
             Debug.Log("YellowAttack");
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 2;
                     TongueAttack();
                     break;
                 case 2:
@@ -160,14 +175,12 @@ public class Chameleon : MonoBehaviour
                     break;
             }
         }
-        else if ((_nowLayer & 1 << LayerMask.NameToLayer("Purple")) == 1 << LayerMask.NameToLayer("Purple"))
+        else if (_element == 3)
         {
-            Charge.Damage = 0.5f;
             Debug.Log("PurpleAttack");
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 5;
                     TongueAttack();
                     break;
                 case 2:
@@ -178,14 +191,12 @@ public class Chameleon : MonoBehaviour
                     break;
             }
         }
-        else if ((_nowLayer & 1 << LayerMask.NameToLayer("Green")) == 1 << LayerMask.NameToLayer("Green"))
+        else if (_element == 4)
         {
-            Charge.Damage = 0.5f;
             Debug.Log("GreenAttack");
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 5;
                     TongueAttack();
                     break;
                 case 2:
@@ -196,14 +207,12 @@ public class Chameleon : MonoBehaviour
                     break;
             }
         }
-        else if ((_nowLayer & 1 << LayerMask.NameToLayer("Orange")) == 1 << LayerMask.NameToLayer("Orange"))
+        else if (_element == 5)
         {
-            Charge.Damage = 0.5f;
             Debug.Log("OrangeAttack");
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 5;
                     TongueAttack();
                     break;
                 case 2:
@@ -214,13 +223,12 @@ public class Chameleon : MonoBehaviour
                     break;
             }
         }
-        else if (_nowLayer == 0)
+        else if (_element == 6)
         {
             Debug.Log("NormalAttack");
             switch (_attackSelect)
             {
                 case 1:
-                    _tongueRange = 3;
                     TongueAttack();
                     break;
             }
@@ -230,11 +238,6 @@ public class Chameleon : MonoBehaviour
     //舌攻撃に関するフィールド
     Vector3 _tongueVector;
     Vector3 _mousePoint;
-
-    [Header("TongueRange")]
-    [Tooltip("舌の長さ")]
-    [SerializeField]
-    float _tongueRange;
 
     bool _isTongueAttacking = false;//攻撃中かどうか
     const float _tongueRangeMaxTime = 0.3f;//舌が伸びきるまでの時間
@@ -257,7 +260,6 @@ public class Chameleon : MonoBehaviour
             }
             else if (_mousePoint.y - transform.position.y <= -1 / 2f)
             {
-                Debug.Log("b");
                 _tongueVector = new Vector3(Mathf.Sqrt(3) / 2f, -1 / 2f, 0);
             }
             Debug.Log(_tongueVector);

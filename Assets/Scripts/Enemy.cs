@@ -3,6 +3,31 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Enemy : MonoBehaviour
 {
+    public enum Element
+    {
+        Red,
+        Blue,
+        Yellow,
+        Purple,
+        Green,
+        Orange,
+        White
+    }
+
+    [Header("Element")]
+    [SerializeField]
+    Element _element;
+
+    [Header("PlayerElement")]
+    [SerializeField]
+    PlayerElement _playerElement;
+
+    [Header("Player")]
+    [SerializeField]
+    GameObject _player;
+
+    DamageCalculation _damageCalc;
+
     [Header("PlayerMask")]
     [SerializeField]
     LayerMask _playerMask;
@@ -18,7 +43,7 @@ public class Enemy : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
+        _damageCalc = new DamageCalculation();
     }
 
     // Update is called once per frame
@@ -37,30 +62,17 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    float DamageCalculation(string tag)
-    {
-        float damage = 0;
-        if (tag == "FireCharge")
-        {
-            damage = Charge.Damage;
-
-        }
-        else if (tag == "BubbleCharge")
-        {
-            damage = Charge.Damage;
-
-        }
-        else if (tag == "ThunderCharge")
-        {
-            damage = Charge.Damage;
-
-        }
-        return damage;
-    }
-
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        _hp -= DamageCalculation(collision.gameObject.tag);
+        if (collision.gameObject.tag == "Charge")
+        {
+            Charge charge = collision.gameObject.GetComponent<Charge>();
+            _hp -= _damageCalc.DamageCalc(charge._element.ToString(), _element.ToString(), _playerElement._elementData[_player.GetComponent<Chameleon>()._element]._chargePower);
+        }
+        else if (collision.gameObject.tag == "Player")
+        {
+            _hp -= _damageCalc.DamageCalc(_playerElement._elementData[_player.GetComponent<Chameleon>()._element]._element.ToString(), _element.ToString(), _playerElement._elementData[_player.GetComponent<Chameleon>()._element]._tonguePower);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

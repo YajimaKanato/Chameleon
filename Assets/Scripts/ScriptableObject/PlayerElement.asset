@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 986c1f32c995c6544b1c98416580acb1, type: 3}
+  m_Name: PlayerElement
+  m_EditorClassIdentifier: 
+  _elementData:
+  - _element: 0
+    _chargePower: 1
+    _tonguePower: 1
+    _tongueRange: 2
+  - _element: 1
+    _chargePower: 1
+    _tonguePower: 1
+    _tongueRange: 2
+  - _element: 2
+    _chargePower: 1
+    _tonguePower: 1
+    _tongueRange: 2
+  - _element: 3
+    _chargePower: 1
+    _tonguePower: 1
+    _tongueRange: 5
+  - _element: 4
+    _chargePower: 1
+    _tonguePower: 1
+    _tongueRange: 5
+  - _element: 5
+    _chargePower: 1
+    _tonguePower: 1
+    _tongueRange: 5
+  - _element: 6
+    _chargePower: 0
+    _tonguePower: 2
+    _tongueRange: 3
